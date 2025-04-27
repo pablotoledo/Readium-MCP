@@ -7,9 +7,9 @@ readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<4.0"
+python = ">=3.10,<4.0"
 mcp = { version = ">=1.6.0,<2.0.0", extras = ["cli"] }
-readium = { version = "^0.4.1", python = ">=3.11,<4.0" }
+readium = { version = "^0.4.1", python = ">=3.10,<4.0" }
 
 [tool.poetry.scripts]
 readium-mcp = "src.server:main"
