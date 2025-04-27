@@ -10,6 +10,9 @@ requires-python = ">=3.10"
 dependencies = [
 ]
 
+[project.scripts]
+readium-mcp = "readium_mcp.main:main"
+
 [tool.poetry]
 packages = [{include = "readium_mcp", from = "src"}]
 
