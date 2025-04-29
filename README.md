@@ -15,6 +15,10 @@ Este proyecto incluye un servidor [FastMCP](https://modelcontextprotocol.io) de 
     brew install just
     ```
   - En otros sistemas, consulta la [documentación oficial](https://just.systems/man/en/#installation).
+- [uvicorn](https://www.uvicorn.org/) y [starlette](https://www.starlette.io/) — Necesarios para exponer el servidor HTTP en el puerto 8000.
+    ```bash
+    poetry add --group dev uvicorn starlette
+    ```
 
 ## Instalación de dependencias
 
@@ -48,11 +52,16 @@ Alternativamente, puedes usar Poetry directamente:
 
 ## Ejecutar el servidor FastMCP
 
-Lanza el servidor MCP con el siguiente comando:
+El servidor MCP ahora se ejecuta como una aplicación ASGI usando Starlette y uvicorn, y se expone en el puerto **8000**.
+
+Lanza el servidor con el siguiente comando:
 
 ```bash
 poetry run readium-mcp
 ```
+
+Esto iniciará el servidor en:  
+http://localhost:8000
 
 Esto inicia un servidor MCP que expone la herramienta principal:
 

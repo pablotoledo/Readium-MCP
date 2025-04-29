@@ -60,8 +60,17 @@ def analyze_docs(
         }
 
 def main():
-    print("Starting the Readium MCP server...")
-    mcp.run()
+    print("Starting the Readium MCP server on http://localhost:8000 ...")
+    from starlette.applications import Starlette
+    from starlette.routing import Mount
+    import uvicorn
+
+    app = Starlette(
+        routes=[
+            Mount("/", app=mcp.sse_app()),
+        ]
+    )
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
     main()
