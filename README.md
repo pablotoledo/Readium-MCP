@@ -7,11 +7,44 @@ Este proyecto incluye un servidor [FastMCP](https://modelcontextprotocol.io) de 
 - Python 3.10 o superior
 - [Poetry](https://python-poetry.org/)
 
+## Requisitos de desarrollo
+
+- [just](https://just.systems/) — Utilidad para automatizar tareas de desarrollo.
+  - En macOS:  
+    ```bash
+    brew install just
+    ```
+  - En otros sistemas, consulta la [documentación oficial](https://just.systems/man/en/#installation).
+
 ## Instalación de dependencias
 
 ```bash
 poetry install
 ```
+
+## Ejecutar tareas comunes
+
+Con just puedes ejecutar tareas habituales del proyecto:
+
+- Iniciar el servidor MCP:
+  ```bash
+  just run
+  ```
+- Ejecutar los tests:
+  ```bash
+  just test
+  ```
+
+Alternativamente, puedes usar Poetry directamente:
+
+- Iniciar el servidor:
+  ```bash
+  poetry run readium-mcp
+  ```
+- Ejecutar los tests:
+  ```bash
+  poetry run pytest
+  ```
 
 ## Ejecutar el servidor FastMCP
 
@@ -50,7 +83,13 @@ El resultado es un diccionario con:
 Para ejecutar los tests unitarios con Poetry:
 
 ```bash
-poetry run python -m unittest discover
+poetry run pytest
+```
+
+O usando just:
+
+```bash
+just test
 ```
 
 Esto buscará y ejecutará todos los tests en el directorio `tests/`.

@@ -14,12 +14,7 @@ mcp = FastMCP("Readium MCP Server")
         "use_markitdown (bool), url_mode (str), max_file_size (int), "
         "exclude_dirs/include_ext/exclude_ext (list of str). "
         "Output: dict with 'content' (summary, tree, content) and 'isError' (bool)."
-    ),
-    annotations={
-        "title": "Analyze Documentation",
-        "readOnlyHint": True,
-        "openWorldHint": True,
-    }
+    )
 )
 def analyze_docs(
     path: str,

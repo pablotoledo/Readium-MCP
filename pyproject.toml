@@ -14,6 +14,9 @@ readium = { version = "^0.4.1", python = ">=3.10,<4.0" }
 [tool.poetry.scripts]
 readium-mcp = "src.server:main"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
