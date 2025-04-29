@@ -31,15 +31,23 @@ def analyze_docs(
     Analyze documentation using Readium and return summary, tree, and content.
     """
     try:
-        config = ReadConfig(
-            max_file_size=max_file_size,
-            target_dir=target_dir,
-            use_markitdown=use_markitdown,
-            url_mode=url_mode,
-            exclude_dirs=set(exclude_dirs) if exclude_dirs else None,
-            exclude_extensions=set(exclude_ext) if exclude_ext else None,
-            include_extensions=set(include_ext) if include_ext else None,
-        )
+        # Build config_kwargs with only the parameters that have values
+        config_kwargs = {
+            "max_file_size": max_file_size,
+            "target_dir": target_dir,
+            "use_markitdown": use_markitdown,
+            "url_mode": url_mode,
+        }
+        
+        # Only add these parameters if they aren't None
+        if exclude_dirs is not None:
+            config_kwargs["exclude_dirs"] = set(exclude_dirs)
+        if exclude_ext is not None:
+            config_kwargs["exclude_extensions"] = set(exclude_ext)
+        if include_ext is not None:
+            config_kwargs["include_extensions"] = set(include_ext)
+            
+        config = ReadConfig(**config_kwargs)
         reader = Readium(config)
         summary, tree, content = reader.read_docs(path, branch=branch)
         return {
@@ -58,7 +66,7 @@ def analyze_docs(
             ],
             "isError": True,
         }
-
+    
 def main():
     print("Starting the Readium MCP server on http://localhost:8000 ...")
     from starlette.applications import Starlette
