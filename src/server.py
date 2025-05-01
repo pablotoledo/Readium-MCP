@@ -1,63 +1,32 @@
+#!/usr/bin/env python3
+import logging
+import sys
 from mcp.server.fastmcp import FastMCP, Context
+from readium import Readium, ReadConfig
 from typing import Optional, List, Dict, Any
 import traceback
 import asyncio
-from contextlib import asynccontextmanager
-from collections.abc import AsyncIterator
 
-from readium import Readium, ReadConfig
-
-from starlette.applications import Starlette
-from starlette.routing import Route, Mount
-from starlette.responses import JSONResponse
-from starlette.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
-import uvicorn
-import logging
-
-# Definir lifespan para inicialización temprana
-@asynccontextmanager
-async def app_lifespan(server: FastMCP) -> AsyncIterator[None]:
-    """
-    Inicializa recursos críticos antes de aceptar peticiones.
-    """
-    print("Iniciando servidor MCP, preparando recursos...")
-    try:
-        # Aquí puedes poner inicialización real (conexiones, modelos, etc.)
-        await asyncio.sleep(1)  # Simulación de inicialización rápida
-        print("Servidor completamente inicializado y listo para peticiones")
-        yield None
-    finally:
-        print("Cerrando servidor MCP...")
-
-# Crear el servidor con lifespan y dependencias explícitas
-# IMPORTANTE: Configurar las capacidades para permitir listar herramientas
-mcp = FastMCP(
-    "Readium MCP Server", 
-    lifespan=app_lifespan,
-    dependencies=["readium", "mcp"],  # Declara las dependencias
-    capabilities={
-        "tools": {
-            "listChanged": True  # Habilitar listado de herramientas
-        },
-        "resources": {
-            "subscribe": True,
-            "listChanged": True
-        },
-        "prompts": {
-            "listChanged": True
-        }
-    }
+# Configure logging to stderr, DEBUG level
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    stream=sys.stderr
 )
+logger = logging.getLogger("readium-mcp")
+
+logger.debug("Importing modules and initializing server...")
+
+# Create the MCP server with properly structured capabilities
+# IMPORTANT: Pass capabilities as a dictionary to the constructor
+mcp = FastMCP("Readium MCP Server")
+
+logger.info("MCP server instance created.")
 
 @mcp.tool(
     description=(
         "Analyze documentation from a local directory, Git repo, or URL using Readium. "
-        "Returns a summary, a tree of the doc structure, and the content. "
-        "Arguments: path (str, required), branch (str, optional), target_dir (str, optional), "
-        "use_markitdown (bool), url_mode (str), max_file_size (int), "
-        "exclude_dirs/include_ext/exclude_ext (list of str). "
-        "Output: dict with 'content' (summary, tree, content) and 'isError' (bool)."
+        "Returns a summary, tree structure, and content."
     )
 )
 async def analyze_docs(
@@ -73,43 +42,62 @@ async def analyze_docs(
     ctx: Optional[Context] = None
 ) -> Dict[str, Any]:
     """
-    Analyze documentation using Readium and return summary, tree, and content.
+    Analyze documentation using Readium and return structured results.
     """
+    logger.info("Received analyze_docs request.")
+    logger.debug(f"Parameters: path={path}, branch={branch}, target_dir={target_dir}, "
+                 f"use_markitdown={use_markitdown}, url_mode={url_mode}, "
+                 f"max_file_size={max_file_size}, exclude_dirs={exclude_dirs}, "
+                 f"exclude_ext={exclude_ext}, include_ext={include_ext}")
+
     try:
-        # Si ctx está disponible, usarlo para reportar progreso
+        # Report progress if context is available
         if ctx:
             ctx.info(f"Analyzing documentation from: {path}")
             await ctx.report_progress(0, 100)
-        
+        logger.info(f"Analyzing documentation from: {path}")
+
+        # Configure Readium
         config_kwargs = {
             "max_file_size": max_file_size,
             "target_dir": target_dir,
             "use_markitdown": use_markitdown,
             "url_mode": url_mode,
-            "debug": True,  # Habilitar debug para más información
+            "debug": True,
         }
+
+        # Add optional configuration
         if exclude_dirs is not None:
             config_kwargs["exclude_dirs"] = set(exclude_dirs)
         if exclude_ext is not None:
             config_kwargs["exclude_extensions"] = set(exclude_ext)
         if include_ext is not None:
             config_kwargs["include_extensions"] = set(include_ext)
-        
+
+        logger.debug(f"ReadConfig kwargs: {config_kwargs}")
+
+        # Create Readium instance
         config = ReadConfig(**config_kwargs)
         reader = Readium(config)
-        
-        # Reportar progreso intermedio
+
+        # Progress update
         if ctx:
-            ctx.info("Readium configurado, iniciando análisis...")
+            ctx.info("Starting analysis...")
             await ctx.report_progress(30, 100)
-        
+        logger.info("Starting Readium analysis...")
+
+        # Process documentation
+        logger.debug("Calling reader.read_docs()...")
         summary, tree, content = reader.read_docs(path, branch=branch)
-        
-        # Reportar finalización
+        logger.debug("Readium analysis complete.")
+
+        # Final progress update
         if ctx:
-            ctx.info("Análisis completado")
+            ctx.info("Analysis completed")
             await ctx.report_progress(100, 100)
-        
+        logger.info("Analysis completed successfully.")
+
+        # Return formatted results
         return {
             "content": [
                 {"type": "text", "text": f"Summary:\n{summary}"},
@@ -119,65 +107,28 @@ async def analyze_docs(
             "isError": False,
         }
     except Exception as e:
-        tb = traceback.format_exc()
-        error_message = f"Error: {str(e)}\n{tb}"
-        
-        # Reportar error si hay contexto
+        # Handle errors
+        error_message = f"Error: {str(e)}\n{traceback.format_exc()}"
+        logger.error(f"Exception in analyze_docs: {error_message}")
+
         if ctx:
-            ctx.error(f"Error en analyze_docs: {str(e)}")
-        
+            ctx.error(f"Error analyzing documentation: {str(e)}")
+
         return {
-            "content": [
-                {"type": "text", "text": error_message}
-            ],
+            "content": [{"type": "text", "text": error_message}],
             "isError": True,
         }
 
 def main():
+    """Run the MCP server"""
+    logger.info("Starting Readium MCP Server (stdio transport)...")
+    print("Starting Readium MCP Server...", file=sys.stderr)
+    # Run the server using stdio transport by default
     try:
-        print("Starting the Readium MCP server on http://localhost:8000 ...")
-        logging.basicConfig(level=logging.DEBUG)
-
-        # Endpoint de health para verificar que el servidor está funcionando
-        async def health(request):
-            return JSONResponse({"status": "healthy", "server": "readium-mcp"})
-
-        # Configurar middleware CORS para permitir conexiones
-        middleware = [
-            Middleware(
-                CORSMiddleware,
-                allow_origins=["*"],
-                allow_methods=["*"],
-                allow_headers=["*"],
-            )
-        ]
-
-        # Crear instancia de la aplicación MCP
-        # NOTA: Esta aplicación maneja tanto SSE como mensajes JSON-RPC
-        mcp_app = mcp.sse_app()
-
-        # Montar el servidor MCP correctamente
-        app = Starlette(
-            routes=[
-                Route("/health", health),
-                # El endpoint principal que maneja tanto SSE como mensajes
-                Mount("/", app=mcp_app),
-            ],
-            middleware=middleware,
-        )
-        
-        print("Servidor MCP configurado correctamente")
-        
-        uvicorn.run(
-            app, 
-            host="0.0.0.0", 
-            port=8000, 
-            log_level="debug",
-            timeout_keep_alive=120
-        )
+        mcp.run(transport='stdio')
     except Exception as e:
-        print(f"Error initializing server: {str(e)}")
-        traceback.print_exc()
+        logger.error(f"Error running MCP server: {e}")
+        traceback.print_exc(file=sys.stderr)
 
 if __name__ == "__main__":
     main()

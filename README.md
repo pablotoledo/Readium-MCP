@@ -1,104 +1,88 @@
 # Readium MCP
 
-Este proyecto incluye un servidor [FastMCP](https://modelcontextprotocol.io) de ejemplo integrado con Poetry.
+This project provides a minimal [FastMCP](https://modelcontextprotocol.io) server that exposes Readium's documentation analysis functionality via the MCP protocol.
 
-## Requisitos
+## Requirements
 
-- Python 3.10 o superior
+- Python 3.10 or higher
 - [Poetry](https://python-poetry.org/)
 
-## Requisitos de desarrollo
+## Installation
 
-- [just](https://just.systems/) — Utilidad para automatizar tareas de desarrollo.
-  - En macOS:  
-    ```bash
-    brew install just
-    ```
-  - En otros sistemas, consulta la [documentación oficial](https://just.systems/man/en/#installation).
-- [uvicorn](https://www.uvicorn.org/) y [starlette](https://www.starlette.io/) — Necesarios para exponer el servidor HTTP en el puerto 8000.
-    ```bash
-    poetry add --group dev uvicorn starlette
-    ```
-
-## Instalación de dependencias
+Install dependencies with Poetry:
 
 ```bash
 poetry install
 ```
 
-## Ejecutar tareas comunes
+## Running the MCP Server
 
-Con just puedes ejecutar tareas habituales del proyecto:
-
-- Iniciar el servidor MCP:
-  ```bash
-  just run
-  ```
-- Ejecutar los tests:
-  ```bash
-  just test
-  ```
-
-Alternativamente, puedes usar Poetry directamente:
-
-- Iniciar el servidor:
-  ```bash
-  poetry run readium-mcp
-  ```
-- Ejecutar los tests:
-  ```bash
-  poetry run pytest
-  ```
-
-## Ejecutar el servidor FastMCP
-
-El servidor MCP ahora se ejecuta como una aplicación ASGI usando Starlette y uvicorn, y se expone en el puerto **8000**.
-
-Lanza el servidor con el siguiente comando:
+Start the server using Poetry:
 
 ```bash
 poetry run readium-mcp
 ```
 
-Esto iniciará el servidor en:  
-http://localhost:8000
+This will launch the MCP server using stdio transport (no HTTP, no Starlette, no uvicorn).
 
-Esto inicia un servidor MCP que expone la herramienta principal:
+## Usage
 
-- **analyze_docs** — Analiza documentación desde un directorio local, repositorio Git o URL usando Readium. Devuelve un resumen, un árbol de la estructura y el contenido.
+You can use this server with any MCP-compatible client, such as the [MCP CLI](https://github.com/modelcontextprotocol/cli) or Claude Desktop.
 
-### Parámetros de `analyze_docs`
+### MCP CLI Example
 
-- `path` (str, requerido): Ruta local, URL de repo GitHub o URL de documentación.
-- `branch` (str, opcional): Rama a usar si es un repo.
-- `target_dir` (str, opcional): Subdirectorio a analizar.
-- `use_markitdown` (bool): Usa Markitdown para Markdown (por defecto: False).
-- `url_mode` (str): Modo de URL ('clean', 'raw', etc.; por defecto: 'clean').
-- `max_file_size` (int): Tamaño máximo de archivo en bytes (por defecto: 5MB).
-- `exclude_dirs` (list[str]): Directorios a excluir.
-- `exclude_ext` (list[str]): Extensiones a excluir (ej: ['.png']).
-- `include_ext` (list[str]): Extensiones a incluir (ej: ['.md']).
+Install the MCP CLI and register the server:
 
-### Ejemplo de uso
+```bash
+mcp install -n readium-mcp -- poetry run readium-mcp
+mcp inspect readium-mcp
+```
 
-Puedes probar la herramienta usando clientes MCP compatibles, como la CLI `mcp` o integraciones en Claude Desktop.
+### Claude Desktop Example
 
-El resultado es un diccionario con:
-- `content`: lista de bloques de texto (`summary`, `tree`, `content`)
-- `isError`: booleano, indica si hubo error
+Add to your `claude_desktop_config.json`:
 
-## Ejecutar los tests
+```json
+{
+  "mcpServers": {
+    "readium": {
+      "command": "poetry",
+      "args": ["run", "readium-mcp"]
+    }
+  }
+}
+```
 
-Para ejecutar los tests unitarios con Poetry:
+## Exposed Tool
+
+- **analyze_docs** — Analyze documentation from a local directory, Git repo, or URL using Readium. Returns a summary, tree structure, and content.
+
+#### Parameters
+
+- `path` (str, required): Local path, GitHub repo URL, or documentation URL.
+- `branch` (str, optional): Branch to use if a repo.
+- `target_dir` (str, optional): Subdirectory to analyze.
+- `use_markitdown` (bool): Use Markitdown for Markdown (default: False).
+- `url_mode` (str): URL mode ('clean', 'raw', etc.; default: 'clean').
+- `max_file_size` (int): Max file size in bytes (default: 5MB).
+- `exclude_dirs` (list[str]): Directories to exclude.
+- `exclude_ext` (list[str]): Extensions to exclude (e.g., ['.png']).
+- `include_ext` (list[str]): Extensions to include (e.g., ['.md']).
+
+#### Output
+
+Returns a dictionary with:
+- `content`: list of text blocks (`summary`, `tree`, `content`)
+- `isError`: boolean, indicates if there was an error
+
+## Testing
+
+To run unit tests:
 
 ```bash
 poetry run pytest
 ```
 
-O usando just:
+---
 
-```bash
-just test
-```
-
-Esto buscará y ejecutará todos los tests en el directorio `tests/`.
+This minimal setup avoids HTTP servers and focuses on stdio-based MCP communication for maximum compatibility and simplicity.

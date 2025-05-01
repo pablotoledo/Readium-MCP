@@ -2,25 +2,22 @@
 name = "readium-mcp"
 version = "0.1.0"
 description = "MCP server that exposes Readium's functionality for document analysis"
-authors = ["Pablo Toledo <pablotoledo@users.noreply.github.com>"]
+authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-mcp = { version = ">=1.6.0,<2.0.0", extras = ["cli"] }
-readium = { version = "^0.4.1", python = ">=3.10,<4.0" }
-starlette = "^0.36.3"
-uvicorn = "^0.29.0"
-httpx = "^0.27.0"
+mcp = {version = ">=1.6.0,<2.0.0", extras = ["cli"]}
+readium = "^0.4.1"
 
 [tool.poetry.scripts]
 readium-mcp = "src.server:main"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
-pytest-asyncio = "^0.23.5"
+pytest = "^8.3.0"
+pytest-asyncio = "^0.23.0"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
