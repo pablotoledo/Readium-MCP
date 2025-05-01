@@ -8,6 +8,19 @@ run:
 test:
     poetry run pytest
 
+# Linting de código
+lint:
+    poetry run ruff check .
+    poetry run pyright src
+
+# Auto-fix de código
+fix:
+    poetry run ruff check . --fix
+
+# Ejecutar pre-commit manualmente
+pre-commit:
+    poetry run pre-commit run --all-files
+
 # Ejecutar cliente de prueba
 test-client:
     poetry run python test.py
@@ -26,10 +39,3 @@ clean:
     rm -rf .pytest_cache
     rm -rf dist
     rm -rf build
-
-# Limpiar y reiniciar proceso
-clean-start:
-    pkill -f "python -m src.server" || true
-    pkill -f "uvicorn" || true
-    sleep 2
-    poetry run readium-mcp

@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 import logging
 import sys
-from mcp.server.fastmcp import FastMCP, Context
-from readium import Readium, ReadConfig
-from typing import Optional, List, Dict, Any
 import traceback
-import asyncio
+from typing import Any
+
+from mcp.server.fastmcp import Context, FastMCP
+from readium import ReadConfig, Readium
 
 # Configure logging to stderr, DEBUG level
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    stream=sys.stderr
-)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s", stream=sys.stderr)
 logger = logging.getLogger("readium-mcp")
 
 logger.debug("Importing modules and initializing server...")
@@ -23,6 +19,7 @@ mcp = FastMCP("Readium MCP Server")
 
 logger.info("MCP server instance created.")
 
+
 @mcp.tool(
     description=(
         "Analyze documentation from a local directory, Git repo, or URL using Readium. "
@@ -31,29 +28,31 @@ logger.info("MCP server instance created.")
 )
 async def analyze_docs(
     path: str,
-    branch: Optional[str] = None,
-    target_dir: Optional[str] = None,
+    branch: str | None = None,
+    target_dir: str | None = None,
     use_markitdown: bool = False,
     url_mode: str = "clean",
     max_file_size: int = 5 * 1024 * 1024,
-    exclude_dirs: Optional[List[str]] = None,
-    exclude_ext: Optional[List[str]] = None,
-    include_ext: Optional[List[str]] = None,
-    ctx: Optional[Context] = None
-) -> Dict[str, Any]:
+    exclude_dirs: list[str] | None = None,
+    exclude_ext: list[str] | None = None,
+    include_ext: list[str] | None = None,
+    ctx: Context | None = None,
+) -> dict[str, Any]:
     """
     Analyze documentation using Readium and return structured results.
     """
     logger.info("Received analyze_docs request.")
-    logger.debug(f"Parameters: path={path}, branch={branch}, target_dir={target_dir}, "
-                 f"use_markitdown={use_markitdown}, url_mode={url_mode}, "
-                 f"max_file_size={max_file_size}, exclude_dirs={exclude_dirs}, "
-                 f"exclude_ext={exclude_ext}, include_ext={include_ext}")
+    logger.debug(
+        f"Parameters: path={path}, branch={branch}, target_dir={target_dir}, "
+        f"use_markitdown={use_markitdown}, url_mode={url_mode}, "
+        f"max_file_size={max_file_size}, exclude_dirs={exclude_dirs}, "
+        f"exclude_ext={exclude_ext}, include_ext={include_ext}"
+    )
 
     try:
         # Report progress if context is available
         if ctx:
-            ctx.info(f"Analyzing documentation from: {path}")
+            await ctx.info(f"Analyzing documentation from: {path}")
             await ctx.report_progress(0, 100)
         logger.info(f"Analyzing documentation from: {path}")
 
@@ -82,7 +81,7 @@ async def analyze_docs(
 
         # Progress update
         if ctx:
-            ctx.info("Starting analysis...")
+            await ctx.info("Starting analysis...")
             await ctx.report_progress(30, 100)
         logger.info("Starting Readium analysis...")
 
@@ -93,7 +92,7 @@ async def analyze_docs(
 
         # Final progress update
         if ctx:
-            ctx.info("Analysis completed")
+            await ctx.info("Analysis completed")
             await ctx.report_progress(100, 100)
         logger.info("Analysis completed successfully.")
 
@@ -108,16 +107,17 @@ async def analyze_docs(
         }
     except Exception as e:
         # Handle errors
-        error_message = f"Error: {str(e)}\n{traceback.format_exc()}"
+        error_message = f"Error: {e!s}\n{traceback.format_exc()}"
         logger.error(f"Exception in analyze_docs: {error_message}")
 
         if ctx:
-            ctx.error(f"Error analyzing documentation: {str(e)}")
+            await ctx.error(f"Error analyzing documentation: {e!s}")
 
         return {
             "content": [{"type": "text", "text": error_message}],
             "isError": True,
         }
+
 
 def main():
     """Run the MCP server"""
@@ -125,10 +125,11 @@ def main():
     print("Starting Readium MCP Server...", file=sys.stderr)
     # Run the server using stdio transport by default
     try:
-        mcp.run(transport='stdio')
+        mcp.run(transport="stdio")
     except Exception as e:
         logger.error(f"Error running MCP server: {e}")
         traceback.print_exc(file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()

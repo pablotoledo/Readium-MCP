@@ -2,9 +2,7 @@
 name = "readium-mcp"
 version = "0.1.0"
 description = "MCP server that exposes Readium's functionality for document analysis"
-authors = [
-    {name = "Pablo Toledo", email = "pablotoledo@users.noreply.github.com"}
-]
+authors = ["Pablo Toledo <pablotoledo@users.noreply.github.com>"]
 readme = "README.md"
 packages = [{ include = "src" }]
 
@@ -19,6 +17,42 @@ readium-mcp = "src.server:main"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"
 pytest-asyncio = "^0.23.0"
+pre-commit = "^3.6"
+ruff = ">=0.3"
+pyright = "^1.1.384"
+commitizen = "^3.29.1"
+
+[tool.ruff]
+line-length = 120
+target-version = 'py311'
+
+[tool.ruff.lint]
+select = [
+  "A",   # flake8-buildins
+  "B",   # flake8-bugbear
+  "C4",
+  "E",   # pycodestyle - errors
+  "F",   # pyflakes
+  "I",   # isort
+  "RUF", # ruff specific rules
+  "S",   # flake8-bandit
+  "UP",  # pyupgrade
+  "W",   # pycodestyle - warnings
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test_*" = ["S101"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 250
+
+[tool.pyright]
+ignore = []
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.11"
+venvPath = "."
+venv = ".venv"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

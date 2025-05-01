@@ -169,21 +169,21 @@ async def test_readium_mcp():
     server_params = StdioServerParameters(
         command="readium-mcp"
     )
-    
+
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
-            
+
             # List tools
             tools = await session.list_tools()
             print(f"Available tools: {tools}")
-            
+
             # Analyze a repository
             result = await session.call_tool(
-                "analyze_docs", 
+                "analyze_docs",
                 {"path": "https://github.com/modelcontextprotocol/servers.git"}
             )
-            
+
             print(f"Analysis result: {result}")
 
 # Run
