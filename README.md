@@ -7,6 +7,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
 [![Model Context Protocol](https://img.shields.io/badge/MCP-compatible-green)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/readium-mcp.svg)](https://pypi.org/project/readium-mcp/)
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that exposes the powerful documentation analysis functionality of [Readium](https://github.com/pablotoledo/readium) for LLMs like Claude and other MCP-compatible clients.
 
