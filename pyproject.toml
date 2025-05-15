@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "readium-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server that exposes Readium's functionality for document analysis"
 authors = ["Pablo Toledo <pablotoledo@users.noreply.github.com>"]
 readme = "README.md"
