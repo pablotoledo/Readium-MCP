@@ -8,7 +8,7 @@ packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-mcp = {version = ">=1.6.0,<2.0.0", extras = ["cli"]}
+mcp = {version = ">=1.8.0,<2.0.0", extras = ["cli"]}
 readium = "^0.4.1"
 
 [tool.poetry.scripts]
